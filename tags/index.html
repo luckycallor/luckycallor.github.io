@@ -355,7 +355,6 @@
 
   
     <div id="gitalk-container"></div>
-    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
   
 
 
@@ -609,9 +608,12 @@
 
 import md5 from 'md5'
 
+
   
-    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
-      <script type="text/javascript">
+    <!-- LOCAL: You can save these files to your site and update links -->
+        <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+        <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <!-- END LOCAL -->
         const gitalk = new Gitalk({
           clientID: '2cea902a8729c0224023',
           clientSecret: '1d5891d0205e77e4de0e0ddb609ae8dd367d7cb6',
