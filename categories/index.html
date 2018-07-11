@@ -108,17 +108,17 @@
 
 
 
-  <meta name="description" content="no search">
+  <meta name="description" content="gitalk">
 <meta property="og:type" content="website">
 <meta property="og:title" content="categories">
 <meta property="og:url" content="https://luckycallor.xyz/categories/index.html">
 <meta property="og:site_name" content="luckycallor">
-<meta property="og:description" content="no search">
+<meta property="og:description" content="gitalk">
 <meta property="og:locale" content="en">
 <meta property="og:updated_time" content="2018-07-09T02:13:53.086Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="categories">
-<meta name="twitter:description" content="no search">
+<meta name="twitter:description" content="gitalk">
 
 
 
@@ -323,6 +323,9 @@
           
 
   
+    <div id="gitalk-container"></div>
+
+  
 
 
 
@@ -351,7 +354,7 @@
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <p class="site-author-name" itemprop="name">luckycallor</p>
-              <p class="site-description motion-element" itemprop="description">no search</p>
+              <p class="site-description motion-element" itemprop="description">gitalk</p>
           </div>
 
           
@@ -572,6 +575,23 @@
 
 
 
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '2cea902a8729c0224023',
+		  clientSecret: '1d5891d0205e77e4de0e0ddb609ae8dd367d7cb6',
+		  repo: 'blog-comments',
+		  owner: 'luckycallor',
+		  admin: ['luckycallor'], 
+		  id: location.pathname,
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
 
 
   
