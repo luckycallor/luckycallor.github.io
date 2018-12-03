@@ -115,7 +115,7 @@
 <meta property="og:site_name" content="luckycallor">
 <meta property="og:description" content="gitalk local">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-07-09T02:13:53.086Z">
+<meta property="og:updated_time" content="2018-07-09T02:13:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="categories">
 <meta name="twitter:description" content="gitalk local">
@@ -580,6 +580,9 @@
   <link rel="stylesheet" href="/lib/gitalk/gitalk.css">
   
   <script src="/lib/gitalk/gitalk.min.js"></script>
+
+	<script src="/js/src/md5.min.js"></script>
+
    <script type="text/javascript">
 		var gitalk = new Gitalk({
 		  clientID: '2cea902a8729c0224023',
@@ -587,7 +590,7 @@
 		  repo: 'blog-comments',
 		  owner: 'luckycallor',
 		  admin: ['luckycallor'], 
-		  id: location.pathname,
+		  id: md5(location.pathname),
 		  distractionFreeMode: 'true'
 		})
 		gitalk.render('gitalk-container')           

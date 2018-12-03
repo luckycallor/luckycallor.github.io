@@ -115,7 +115,7 @@
 <meta property="og:site_name" content="luckycallor">
 <meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-07-07T01:08:16.740Z">
+<meta property="og:updated_time" content="2018-07-07T01:08:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hello World">
 <meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
@@ -709,6 +709,9 @@
   <link rel="stylesheet" href="/lib/gitalk/gitalk.css">
   
   <script src="/lib/gitalk/gitalk.min.js"></script>
+
+	<script src="/js/src/md5.min.js"></script>
+
    <script type="text/javascript">
 		var gitalk = new Gitalk({
 		  clientID: '2cea902a8729c0224023',
@@ -716,7 +719,7 @@
 		  repo: 'blog-comments',
 		  owner: 'luckycallor',
 		  admin: ['luckycallor'], 
-		  id: location.pathname,
+		  id: md5(location.pathname),
 		  distractionFreeMode: 'true'
 		})
 		gitalk.render('gitalk-container')           

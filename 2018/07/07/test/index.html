@@ -115,7 +115,7 @@
 <meta property="og:site_name" content="luckycallor">
 <meta property="og:description" content="迭代器是由STL引入的一种概念模型，是泛型编程的重要部分。说到泛型编程，它与面向对象的共同点是抽象和创建可重用代码，不过面向对象关注的是编程的数据方面，而泛型编程关注的是算法。 泛型编程只在编写独立于数据类型的代码。也就是说写一个函数，它可以用于各种各样的数据类型。C++中的模板使得能够按泛型定义函数或类，从而使程序能用于各种数据类型。而STL想要使算法也能用于各种数据类型。基于STL中的容器模板">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-07-07T01:14:33.757Z">
+<meta property="og:updated_time" content="2018-07-07T01:14:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="test">
 <meta name="twitter:description" content="迭代器是由STL引入的一种概念模型，是泛型编程的重要部分。说到泛型编程，它与面向对象的共同点是抽象和创建可重用代码，不过面向对象关注的是编程的数据方面，而泛型编程关注的是算法。 泛型编程只在编写独立于数据类型的代码。也就是说写一个函数，它可以用于各种各样的数据类型。C++中的模板使得能够按泛型定义函数或类，从而使程序能用于各种数据类型。而STL想要使算法也能用于各种数据类型。基于STL中的容器模板">
@@ -682,6 +682,9 @@
   <link rel="stylesheet" href="/lib/gitalk/gitalk.css">
   
   <script src="/lib/gitalk/gitalk.min.js"></script>
+
+	<script src="/js/src/md5.min.js"></script>
+
    <script type="text/javascript">
 		var gitalk = new Gitalk({
 		  clientID: '2cea902a8729c0224023',
@@ -689,7 +692,7 @@
 		  repo: 'blog-comments',
 		  owner: 'luckycallor',
 		  admin: ['luckycallor'], 
-		  id: location.pathname,
+		  id: md5(location.pathname),
 		  distractionFreeMode: 'true'
 		})
 		gitalk.render('gitalk-container')           
