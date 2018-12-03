@@ -112,11 +112,11 @@
 <meta name="keywords" content="C++,迭代器">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++中的迭代器">
-<meta property="og:url" content="https://luckycallor.xyz/2018/07/07/C++中的迭代器/index.html">
+<meta property="og:url" content="https://luckycallor.xyz/2018/07/07/CppIterator/index.html">
 <meta property="og:site_name" content="luckycallor">
 <meta property="og:description" content="最近的C++作业中要求实现一个排序函数，它可以根据参数的迭代器类型自动选择不同的排序算法。其中最头疼的就是如何根据函数接受的迭代器参数判断其类型，也就是说给你一个迭代器对象，怎么判断这个对象是双向迭代器还是随机访问迭代器等等。为了解决这个问题，我去翻了STL源码，虽然看不懂，不过还是找到了一些头绪，然后顺着这些头绪搜索、查书，终于解决了这个问题。于是总结一下C++中的迭代器。 #迭代器的概念模型">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-12-03T16:33:05.185Z">
+<meta property="og:updated_time" content="2018-12-03T17:00:34.435Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++中的迭代器">
 <meta name="twitter:description" content="最近的C++作业中要求实现一个排序函数，它可以根据参数的迭代器类型自动选择不同的排序算法。其中最头疼的就是如何根据函数接受的迭代器参数判断其类型，也就是说给你一个迭代器对象，怎么判断这个对象是双向迭代器还是随机访问迭代器等等。为了解决这个问题，我去翻了STL源码，虽然看不懂，不过还是找到了一些头绪，然后顺着这些头绪搜索、查书，终于解决了这个问题。于是总结一下C++中的迭代器。 #迭代器的概念模型">
@@ -126,7 +126,7 @@
 
 
 
-  <link rel="canonical" href="https://luckycallor.xyz/2018/07/07/C++中的迭代器/"/>
+  <link rel="canonical" href="https://luckycallor.xyz/2018/07/07/CppIterator/"/>
 
 
 
@@ -297,7 +297,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://luckycallor.xyz/2018/07/07/C++中的迭代器/">
+    <link itemprop="mainEntityOfPage" href="https://luckycallor.xyz/2018/07/07/CppIterator/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="luckycallor">
@@ -356,7 +356,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-12-04 00:33:05" itemprop="dateModified" datetime="2018-12-04T00:33:05+08:00">2018-12-04</time>
+                <time title="Modified: 2018-12-04 01:00:34" itemprop="dateModified" datetime="2018-12-04T01:00:34+08:00">2018-12-04</time>
               
             
           </span>
@@ -729,7 +729,7 @@ struct iterator_traits&lt;const Type*&gt;{ // 这是针对原生指针常量版�
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/07/07/利用google图片搜索收集图片数据集(Python)/" rel="prev" title="利用google图片搜索收集图片数据集(Python)">
+              <a href="/2018/07/07/GoogleImageCrawler/" rel="prev" title="利用google图片搜索收集图片数据集(Python)">
                 利用google图片搜索收集图片数据集(Python) <i class="fa fa-chevron-right"></i>
               </a>
             
