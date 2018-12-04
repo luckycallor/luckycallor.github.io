@@ -116,7 +116,7 @@
 <meta property="og:site_name" content="luckycallor">
 <meta property="og:description" content="最近的C++作业中要求实现一个排序函数，它可以根据参数的迭代器类型自动选择不同的排序算法。其中最头疼的就是如何根据函数接受的迭代器参数判断其类型，也就是说给你一个迭代器对象，怎么判断这个对象是双向迭代器还是随机访问迭代器等等。为了解决这个问题，我去翻了STL源码，虽然看不懂，不过还是找到了一些头绪，然后顺着这些头绪搜索、查书，终于解决了这个问题。于是总结一下C++中的迭代器。 #迭代器的概念模型">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-12-03T17:02:51.172Z">
+<meta property="og:updated_time" content="2018-12-04T15:35:30.706Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++中的迭代器">
 <meta name="twitter:description" content="最近的C++作业中要求实现一个排序函数，它可以根据参数的迭代器类型自动选择不同的排序算法。其中最头疼的就是如何根据函数接受的迭代器参数判断其类型，也就是说给你一个迭代器对象，怎么判断这个对象是双向迭代器还是随机访问迭代器等等。为了解决这个问题，我去翻了STL源码，虽然看不懂，不过还是找到了一些头绪，然后顺着这些头绪搜索、查书，终于解决了这个问题。于是总结一下C++中的迭代器。 #迭代器的概念模型">
@@ -356,7 +356,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-12-04 01:02:51" itemprop="dateModified" datetime="2018-12-04T01:02:51+08:00">2018-12-04</time>
+                <time title="Modified: 2018-12-04 23:35:30" itemprop="dateModified" datetime="2018-12-04T23:35:30+08:00">2018-12-04</time>
               
             
           </span>
@@ -537,154 +537,28 @@
 <p>在泛型编程中，如果要对迭代器所指的元素进行操作，难免需要声明元素类型的变量，这时就要用到value type，pointer，reference这些相应类型；如果需要表示两个迭代器之间的距离(例如begin()和end()之间的距离)，就需要用difference type这一相应类型定义一个变量；如果需要根据迭代器概念模型中五种不同的类型设计不同的算法，就需要用到iterator category。</p>
 <p>##迭代器相应类型的使用</p>
 <p>STL中对迭代器概念模型中的五种类型进行了定义：</p>
-<pre><code>// 节录自 SGI STL &lt;stl_iterator.h&gt;
-// 五种迭代器类型
-struct input_iterator_tag {};
-struct output_iterator_tag {};
-struct forward_iterator_tag : public input_iterator_tag {};
-struct bidirectional_iterator_tag : public forward_iterator_tag {};
-struct random_access_iterator_tag : public bidirectional_iterator_tag {};
-</code></pre><p>STL中定义了iterator_traits类，用于从一个具体的迭代器对象中“萃取”出它的相关类型，定义如下(为何这样定义在3.2中有所介绍，这部分只关注用法)：</p>
-<pre><code>// 节录自 SGI STL &lt;stl_iterator.h&gt;
-// traits
-template&lt;class Iterator&gt;
-struct iterator_traits{
-    typedef typename Iterator::iterator_category iterator_category;
-    typedef typename Iterator::value_type value_type;
-    typedef typename Iterator::difference_type difference_type;
-    typedef typename Iterator::pointer pointer;
-    typedef typename Iterator::reference reference;
-};
-
-// 针对原生指针(native pointer,如 int*)而设计的traits偏特化版
-template&lt;class T&gt;
-struct iterator_traits&lt;T*&gt;{
-    typedef random_access_iterator_tag iterator_category;
-    typedef T value_type;
-    typedef ptrdiff_t difference_type;
-    typedef T* pointer;
-    typedef T&amp; reference;
-};
-
-// 针对原生指针的常量形式(const T*)而设计的traits偏特化版
-template&lt;class T&gt;
-struct iterator_traits&lt;const T*&gt;{
-    typedef random_access_iterator_tag iterator_category;
-    typedef T value_type;
-    typedef ptrdiff_t difference_type;
-    typedef const T* pointer;
-    typedef const T&amp; reference;
-};
-</code></pre><p>在C++中，STL将迭代器的五种类型模型实现为了五种类，所以我们可以用下面这样的代码来声明五种不同类型的迭代器对象：</p>
-<pre><code>std::input_iterator_tag InputIterator; // 声明一个输入迭代器类型的对象；
-std::output_iterator_tag OutputIterator; // 声明一个输出迭代器类型的对象；
-std::forward_iterator_tag ForwardIterator; // 声明一个前向迭代器类型的对象；
-std::bidirectional_iterator_tag BidirectionalIterator; // 声明一个双向迭代器类型的对象；
-std::random_access_iterator_tag RandomAccessIterator; // 声明一个随机访问迭代器类型的对象；
-</code></pre><p>在C++中，STL定义了iterator_traits类，通过这个类我们可以从一个具体的迭代器对象得到它的相应类型。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 节录自 SGI STL &lt;stl_iterator.h&gt;</span></span><br><span class="line"><span class="comment">// 五种迭代器类型</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">input_iterator_tag</span> &#123;</span>&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">output_iterator_tag</span> &#123;</span>&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">forward_iterator_tag</span> :</span> <span class="keyword">public</span> input_iterator_tag &#123;&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">bidirectional_iterator_tag</span> :</span> <span class="keyword">public</span> forward_iterator_tag &#123;&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">random_access_iterator_tag</span> :</span> <span class="keyword">public</span> bidirectional_iterator_tag &#123;&#125;;</span><br></pre></td></tr></table></figure>
+<p>STL中定义了iterator_traits类，用于从一个具体的迭代器对象中“萃取”出它的相关类型，定义如下(为何这样定义在3.2中有所介绍，这部分只关注用法)：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 节录自 SGI STL &lt;stl_iterator.h&gt;</span></span><br><span class="line"><span class="comment">// traits</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Iterator</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::iterator_category iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::value_type value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::difference_type difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::pointer pointer;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::reference reference;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 针对原生指针(native pointer,如 int*)而设计的traits偏特化版</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;T*&gt;&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> random_access_iterator_tag iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span> difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> T* pointer;</span><br><span class="line">    <span class="keyword">typedef</span> T&amp; reference;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 针对原生指针的常量形式(const T*)而设计的traits偏特化版</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;const T*&gt;&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> random_access_iterator_tag iterator_category;</span><br><span class="line">    <span class="keyword">typedef</span> T value_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">ptrdiff_t</span> difference_type;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">const</span> T* pointer;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">const</span> T&amp; reference;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在C++中，STL将迭代器的五种类型模型实现为了五种类，所以我们可以用下面这样的代码来声明五种不同类型的迭代器对象：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::input_iterator_tag InputIterator; <span class="comment">// 声明一个输入迭代器类型的对象；</span></span><br><span class="line"><span class="built_in">std</span>::output_iterator_tag OutputIterator; <span class="comment">// 声明一个输出迭代器类型的对象；</span></span><br><span class="line"><span class="built_in">std</span>::forward_iterator_tag ForwardIterator; <span class="comment">// 声明一个前向迭代器类型的对象；</span></span><br><span class="line"><span class="built_in">std</span>::bidirectional_iterator_tag BidirectionalIterator; <span class="comment">// 声明一个双向迭代器类型的对象；</span></span><br><span class="line"><span class="built_in">std</span>::random_access_iterator_tag RandomAccessIterator; <span class="comment">// 声明一个随机访问迭代器类型的对象；</span></span><br></pre></td></tr></table></figure>
+<p>在C++中，STL定义了iterator_traits类，通过这个类我们可以从一个具体的迭代器对象得到它的相应类型。</p>
 <p>例如对于一个指向 ValueType 类型元素的 IteratorType 类型的迭代器对象 itr (以 “stl::vector<int>::iterator i;” 为例，ValueType 对应 int，IteratorType 对应 stl::vector<int>::iterator，itr 对应 i )，如果我们将对象 itr 作为一个参数传递到了一个模板函数 function 中，则在 function 中，我们可以通过以下代码来定义 itr 的相应类型的变量：</int></int></p>
-<pre><code>template&lt;class IteratorType&gt;
-function(IteratorType itr){
-    // 在function中只有IteratorType是可见的，而ValueType是不可见的，
-    //所以声明ValueType类型的变量及其指针、引用等类型的变量时，需要用
-    //iterator_traits 得到相应的类型
-
-    typename std::iterator_traits&lt;IteratorType&gt;::value_type temp1; // 声明一个ValueType类型的变量
-    typename std::iterator_traits&lt;IteratorType&gt;::pointer temp2; // 声明一个ValueType*类型的变量
-    typename std::iterator_traits&lt;IteratorType&gt;::reference temp3; // 声明一个ValueType&amp;类型的变量
-    typename std::iterator_traits&lt;IteratorType&gt;::difference_type temp4; // 声明一个表示两个迭代器对象之间距离的变量
-}
-</code></pre><p>这里需要解释一下C++中的关键字typename。在上面的代码中，由于IteratorType是模板函数的类型形参，在它被编译器具体化之前，编译器并不知道IteratorType是个什么东西，所以也就不知道像“std::iterator_traits<iteratortype>::value_type”这样的表述是个什么东西，而在声明变量时，变量名前面需要是一个表示数据类型的东西，所以 typename 的作用就是强行告诉编译器“std::iterator_traits<iteratortype>::value_type”是一个表示数据类型的东西，这样“数据类型 变量名；” 就构成了一句合法的声明变量的C++语句。</iteratortype></iteratortype></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>)&#123;</span></span><br><span class="line">    <span class="comment">// 在function中只有IteratorType是可见的，而ValueType是不可见的，</span></span><br><span class="line">    <span class="comment">//所以声明ValueType类型的变量及其指针、引用等类型的变量时，需要用</span></span><br><span class="line">    <span class="comment">//iterator_traits 得到相应的类型</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">typename</span> <span class="built_in">std</span>::iterator_traits&lt;IteratorType&gt;::value_type temp1; <span class="comment">// 声明一个ValueType类型的变量</span></span><br><span class="line">    <span class="keyword">typename</span> <span class="built_in">std</span>::iterator_traits&lt;IteratorType&gt;::pointer temp2; <span class="comment">// 声明一个ValueType*类型的变量</span></span><br><span class="line">    <span class="keyword">typename</span> <span class="built_in">std</span>::iterator_traits&lt;IteratorType&gt;::reference temp3; <span class="comment">// 声明一个ValueType&amp;类型的变量</span></span><br><span class="line">    <span class="keyword">typename</span> <span class="built_in">std</span>::iterator_traits&lt;IteratorType&gt;::difference_type temp4; <span class="comment">// 声明一个表示两个迭代器对象之间距离的变量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里需要解释一下C++中的关键字typename。在上面的代码中，由于IteratorType是模板函数的类型形参，在它被编译器具体化之前，编译器并不知道IteratorType是个什么东西，所以也就不知道像“std::iterator_traits<iteratortype>::value_type”这样的表述是个什么东西，而在声明变量时，变量名前面需要是一个表示数据类型的东西，所以 typename 的作用就是强行告诉编译器“std::iterator_traits<iteratortype>::value_type”是一个表示数据类型的东西，这样“数据类型 变量名；” 就构成了一句合法的声明变量的C++语句。</iteratortype></iteratortype></p>
 <p>需要注意的是，正如“int()”表示一个整型临时变量，“std::random_access_iterator_tag()”表示一个随机访问迭代器类型的临时变量，“std::iterator_traits<iteratortype>::iterator_category()”表示一个迭代器类型IteratorType所属的迭代器概念模型的类型的临时变量。</iteratortype></p>
 <p>所以有了以上这些工具，如果想设计一个根据迭代器概念模型的五种不同类型分别采用不同算法的模板函数应该怎么做呢：</p>
-<pre><code>// 通过C++函数的重载机制来设计针对不同层次迭代器采用不同算法的模板函数
-
-template&lt;class IteratorType&gt;
-void __function(IteratorType itr,std::input_iterator_tag){
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void __function(IteratorType itr,std::output_iterator_tag){
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void __function(IteratorType itr,std::forward_iterator_tag){
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void __function(IteratorType itr,std::bidirectional_iterator_tag){
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void __function(IteratorType itr,std::random_access_iterator_tag){
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void function(IteratorType itr){
-    __function(itr,typename std::iterator_traits&lt;IteratorType&gt;::iterator_category());
-}
-</code></pre><p>##迭代器相应类型的实现</p>
+<p>// 通过C++函数的重载机制来设计针对不同层次迭代器采用不同算法的模板函数</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">std</span>:</span>:input_iterator_tag)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">std</span>:</span>:output_iterator_tag)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">std</span>:</span>:forward_iterator_tag)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">std</span>:</span>:bidirectional_iterator_tag)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">std</span>:</span>:random_access_iterator_tag)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>)&#123;</span></span><br><span class="line">    __function(itr,<span class="keyword">typename</span> <span class="built_in">std</span>::iterator_traits&lt;IteratorType&gt;::iterator_category());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>##迭代器相应类型的实现</p>
 <p>下面以value_type为例介绍一下STL中迭代器的相应类型是如何实现的。</p>
 <p><strong>首先！</strong><br>为了声明一个迭代器的value_type变量，我们可以利用C++模板函数的自变量推导机制。</p>
-<pre><code>template&lt;class IteratorType,class ValueType&gt;
-void __function(IteratorType itr,ValueType val){
-    ValueType temp;
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-void function(IteratorType itr){
-    __function(itr,*itr); 
-    // 第二个参数*itr是ValueType类型，而模板函数__function的变量推导机制，可以根据第二个参数推导出类型ValueType，
-    // 这样通过将function的内容转移到__function就可以声明ValueType类型的变量了
-}
-</code></pre><p><strong>但是！</strong><br>这样的方法只能用于声明value_type类型的变量，如果函数的返回类型是value_type这种方法就行不通了。然后就需要在迭代器的定义中采用巢状类型：</p>
-<pre><code>template&lt;class ValueType&gt;
-struct MyIter{
-    typedef ValueType value_type; // 在迭代器的类定义中给ValueType设置别名value_type
-
-    // 迭代器功能的实现部分
-    ValuType* ptr;
-    MyIter(ValueType* p = 0):ptr(0){}
-    ...
-    ...
-}
-
-template&lt;class IteratorType&gt;
-typename IteratorType::value_type 
-//这一整行表示函数function的返回类型，需要注意的是MyIter就是一种IteratorType
-function(IteratorType itr){
-    ...
-    ...
-}
-</code></pre><p>再但是！<br>对于class type的迭代器(即通过C++的类定义的迭代器)可以在其类实现中通过巢状类型给ValueType设置别名value_type，但是对于C++中的原生指针(指针满足随机访问迭代器类型的所有功能要求，因此是一种随机访问迭代器)如int*，就无法在其类实现应用巢状类型。STL通过一个iterator_traits模板，并针对原生指针和原生指针的常量形式，对iterator_traits进行偏特化，从而使得iterator_traits能够“萃取”所有符合STL规定的迭代器的相应类型。<br>模板iterator_traits的具体实现如下：</p>
-<pre><code>template&lt;class IteratorType&gt;
-struct iterator_traits{ // 对于class type的迭代器，由于其实现中用了巢状类型，因此IteratorType::value_type 就是它的value_type
-    typedef typename IteratorType::value_type value_type;
-};
-
-template&lt;class Type&gt;
-struct iterator_traits&lt;Type*&gt;{ // 这是针对原生指针迭代器的偏特化模板，当迭代器类型为原生指针时，编译器优先采用这个偏特化版本的iterator_traits模板
-    typedef Type value_type;
-};
-
-template&lt;class Type&gt;
-struct iterator_traits&lt;const Type*&gt;{ // 这是针对原生指针常量版本迭代器的偏特化模板，当迭代器类型为原生指针常量版本时，编译器优先采用这个偏特化版本的iterator_traits模板
-    typedef Type value_type;
-};
-// 综上，通过模板的偏特化，对于所有满足STL规定的迭代器类型IteratorType，&quot;typename iterator_traits&lt;IteratorType&gt;::value_type&quot;都是其value type
-</code></pre><p>#參考</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>,<span class="title">class</span> <span class="title">ValueType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> __<span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>,<span class="title">ValueType</span> <span class="title">val</span>)&#123;</span></span><br><span class="line">    ValueType temp;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">function</span>(<span class="title">IteratorType</span> <span class="title">itr</span>)&#123;</span></span><br><span class="line">    __function(itr,*itr); </span><br><span class="line">    <span class="comment">// 第二个参数*itr是ValueType类型，而模板函数__function的变量推导机制，可以根据第二个参数推导出类型ValueType，</span></span><br><span class="line">    <span class="comment">// 这样通过将function的内容转移到__function就可以声明ValueType类型的变量了</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>但是！</strong><br>这样的方法只能用于声明value_type类型的变量，如果函数的返回类型是value_type这种方法就行不通了。然后就需要在迭代器的定义中采用巢状类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">ValueType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">MyIter</span>&#123;</span></span><br><span class="line">    <span class="keyword">typedef</span> ValueType value_type; <span class="comment">// 在迭代器的类定义中给ValueType设置别名value_type</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 迭代器功能的实现部分</span></span><br><span class="line">    ValuType* ptr;</span><br><span class="line">    MyIter(ValueType* p = <span class="number">0</span>):ptr(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">typename</span> <span class="title">IteratorType</span>:</span>:value_type </span><br><span class="line"><span class="comment">//这一整行表示函数function的返回类型，需要注意的是MyIter就是一种IteratorType</span></span><br><span class="line">function(IteratorType itr)&#123;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>再但是！</strong><br>对于class type的迭代器(即通过C++的类定义的迭代器)可以在其类实现中通过巢状类型给ValueType设置别名value_type，但是对于C++中的原生指针(指针满足随机访问迭代器类型的所有功能要求，因此是一种随机访问迭代器)如int*，就无法在其类实现应用巢状类型。STL通过一个iterator_traits模板，并针对原生指针和原生指针的常量形式，对iterator_traits进行偏特化，从而使得iterator_traits能够“萃取”所有符合STL规定的迭代器的相应类型。<br>模板iterator_traits的具体实现如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">IteratorType</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&#123;</span> <span class="comment">// 对于class type的迭代器，由于其实现中用了巢状类型，因此IteratorType::value_type 就是它的value_type</span></span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">typename</span> IteratorType::value_type value_type;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Type</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;Type*&gt;&#123;</span> <span class="comment">// 这是针对原生指针迭代器的偏特化模板，当迭代器类型为原生指针时，编译器优先采用这个偏特化版本的iterator_traits模板</span></span><br><span class="line">    <span class="keyword">typedef</span> Type value_type;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Type</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">iterator_traits</span>&lt;const Type*&gt;&#123;</span> <span class="comment">// 这是针对原生指针常量版本迭代器的偏特化模板，当迭代器类型为原生指针常量版本时，编译器优先采用这个偏特化版本的iterator_traits模板</span></span><br><span class="line">    <span class="keyword">typedef</span> Type value_type;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 综上，通过模板的偏特化，对于所有满足STL规定的迭代器类型IteratorType，"typename iterator_traits&lt;IteratorType&gt;::value_type"都是其value type</span></span><br></pre></td></tr></table></figure>
+<p>#參考</p>
 <blockquote>
 <p>《C++ Primer Plus》<br>《C++ Primer》<br>《STL源码剖析》</p>
 </blockquote>
