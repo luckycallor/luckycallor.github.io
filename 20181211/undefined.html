@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="深度神经网络的训练往往需要大量的数据。当数据量太大无法全部读入到内存中时，程序如何从硬盘读取数据就成为了影响模型训练速度的重要因素。tensorflow提供了TFRecord这种数据读取方式来优化从硬盘读取数据的速度。虽然创建TFRecord需要一些额外的编码工作和运行时间，但是在读取数据方面，TFRecord要比直接读取图片快很多。由于模型训练过程中的读取操作十分频繁，因此当数据量较大无法全部读">
+<meta name="keywords" content="tensorflow,TFRecord">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tensorflow中TFRecord使用方法">
+<meta property="og:url" content="https://luckycallor.xyz/20181211/undefined.html">
+<meta property="og:site_name" content="luckycallor">
+<meta property="og:description" content="深度神经网络的训练往往需要大量的数据。当数据量太大无法全部读入到内存中时，程序如何从硬盘读取数据就成为了影响模型训练速度的重要因素。tensorflow提供了TFRecord这种数据读取方式来优化从硬盘读取数据的速度。虽然创建TFRecord需要一些额外的编码工作和运行时间，但是在读取数据方面，TFRecord要比直接读取图片快很多。由于模型训练过程中的读取操作十分频繁，因此当数据量较大无法全部读">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-12-11T12:59:26.033Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tensorflow中TFRecord使用方法">
+<meta name="twitter:description" content="深度神经网络的训练往往需要大量的数据。当数据量太大无法全部读入到内存中时，程序如何从硬盘读取数据就成为了影响模型训练速度的重要因素。tensorflow提供了TFRecord这种数据读取方式来优化从硬盘读取数据的速度。虽然创建TFRecord需要一些额外的编码工作和运行时间，但是在读取数据方面，TFRecord要比直接读取图片快很多。由于模型训练过程中的读取操作十分频繁，因此当数据量较大无法全部读">
+
+
+
+
+
+
+  <link rel="canonical" href="https://luckycallor.xyz/20181211/undefined.html"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>tensorflow中TFRecord使用方法 | luckycallor</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">luckycallor</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />Tags</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://luckycallor.xyz/20181211/undefined.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="luckycallor">
+      <meta itemprop="description" content="gitalk local">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="luckycallor">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tensorflow中TFRecord使用方法
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-12-11 20:57:07 / Modified: 20:59:26" itemprop="dateCreated datePublished" datetime="2018-12-11T20:57:07+08:00">2018-12-11</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>深度神经网络的训练往往需要大量的数据。当数据量太大无法全部读入到内存中时，程序如何从硬盘读取数据就成为了影响模型训练速度的重要因素。tensorflow提供了TFRecord这种数据读取方式来优化从硬盘读取数据的速度。虽然创建TFRecord需要一些额外的编码工作和运行时间，但是在读取数据方面，TFRecord要比直接读取图片快很多。由于模型训练过程中的读取操作十分频繁，因此当数据量较大无法全部读入内存时，使用TFRecord是一种性价比很高的数据读取方式。</p>
+<p>TFRecord将样本以字典的方式组织起来，然后以特定的编码方式将不同数据类型序列化到硬盘上。TFRecord的使用主要分为创建TFRecord以及在程序中读取TFRecord两部分。下面分别对这两部分进行介绍，并提供一个以图像分类问题为例的示例代码。</p>
+<h1 id="创建TFRecord"><a href="#创建TFRecord" class="headerlink" title="创建TFRecord"></a>创建TFRecord</h1><p>TFRecord的创建主要分为三步：创建文件读写接口（TFRecord创建完成后需关闭）、将数据组织成字典格式的tf_example、将tf_example序列化并写入硬盘。</p>
+<h2 id="创建文件读写接口"><a href="#创建文件读写接口" class="headerlink" title="创建文件读写接口"></a>创建文件读写接口</h2><p>tensorflow提供了创建TFRecord的文件读写接口TFRecord Writer：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">writer = tf.python_io.TFRecordWriter(write_path, options=<span class="keyword">None</span>)</span><br></pre></td></tr></table></figure>
+<p>其中，<br>write_path参数指定TFRecord文件的保存路径，如：/mydir/train.tfrecord；<br>options参数指定数据保存时的压缩方式，None表示不压缩，另外还有两种可选的压缩方式：TFRecordCompressionType.ZLIB和TFRecordCompressionType.GZIP</p>
+<h2 id="将数据组织成字典格式的tf-example"><a href="#将数据组织成字典格式的tf-example" class="headerlink" title="将数据组织成字典格式的tf_example"></a>将数据组织成字典格式的tf_example</h2><p>TFRecord将一个样本组织成字典形式，这里样本是指包括图像、属性、对应标签等信息在内的一个数据样本。字典的key指明不同的属性名称、value则是对应的数据内容。在TFRecord中value是一个list格式，支持的数据类型包括整型、浮点型以及字符串：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tf.train.BytesList(value=[value]) <span class="comment"># value转化为字符串（二进制）列表</span></span><br><span class="line">tf.train.FloatList(value=[value]) <span class="comment"># value转化为浮点型列表</span></span><br><span class="line">tf.train.Int64List(value=[value]) <span class="comment"># value转化为整型列表</span></span><br></pre></td></tr></table></figure>
+<p>由于这些数据类型无法保留图像数据的形状信息，因此对于图像数据，需要先将其作为一个flatten的序列或者字符串保存，同时将其形状信息作为另一个属性保存。在读取数据后，根据保存的形状属性恢复图像的形状。示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf_features = tf.train.Features(feature=&#123;</span><br><span class="line">                <span class="string">"img"</span>: tf.train.Feature(bytes_list=tf.train.BytesList(value=[img.tostring()])), </span><br><span class="line">                <span class="comment"># 将图像转换为字符串保存</span></span><br><span class="line">                <span class="string">"shape"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=list(img.shape))), </span><br><span class="line">                <span class="comment"># 保存图像的形状信息</span></span><br><span class="line">                <span class="string">"label"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=[l])) </span><br><span class="line">                <span class="comment"># 图像对应的类别标记</span></span><br><span class="line">            &#125;)</span><br><span class="line">tf_example = tf.train.Example(features = tf_features)</span><br></pre></td></tr></table></figure>
+<h2 id="将tf-example序列化并写入硬盘"><a href="#将tf-example序列化并写入硬盘" class="headerlink" title="将tf_example序列化并写入硬盘"></a>将tf_example序列化并写入硬盘</h2><p>将一个样本转换为tf_example后，需要将其序列化并通过writer保存到硬盘：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tf_serialized = tf_example.SerializeToString()</span><br><span class="line">writer.write(tf_serialized)</span><br></pre></td></tr></table></figure>
+<p>所有样本全部保存到硬盘后，需要将读写接口关闭：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">writer.close()</span><br></pre></td></tr></table></figure>
+<h1 id="从TFRecord中读取数据"><a href="#从TFRecord中读取数据" class="headerlink" title="从TFRecord中读取数据"></a>从TFRecord中读取数据</h1><p>与直接从硬盘读取原始数据相似，TFRecord也可以通过tensorflow中的tf.dataset类创建数据读取和处理的Pipeline。区别是需要对在TFRecord创建过程中对数据进行的编码操作进行解码。</p>
+<p>首先，需要实现一个针对tf_example的parse_function来对数据进行解码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_function</span><span class="params">(example_proto)</span>:</span></span><br><span class="line">    dics = &#123;</span><br><span class="line">        <span class="string">'img'</span>: tf.FixedLenFeature(shape=(), dtype=tf.string),</span><br><span class="line">        <span class="string">'shape'</span>: tf.FixedLenFeature(shape=(<span class="number">3</span>,), dtype=tf.int64),</span><br><span class="line">        <span class="string">'label'</span>: tf.FixedLenFeature(shape=(), dtype=tf.int64)</span><br><span class="line">    &#125;</span><br><span class="line">    parsed_example = tf.parse_single_example(example_proto, dics)</span><br><span class="line">    parsed_example[<span class="string">'img'</span>] = tf.decode_raw(parsed_example[<span class="string">'img'</span>], tf.uint8)</span><br><span class="line">    parsed_example[<span class="string">'img'</span>] = tf.reshape(parsed_example[<span class="string">'img'</span>], parsed_example[<span class="string">'shape'</span>])</span><br><span class="line">    <span class="keyword">return</span> self.image_processing(parsed_example[<span class="string">'img'</span>]), parsed_example[<span class="string">'label'</span>]</span><br></pre></td></tr></table></figure>
+<p>parse_function接受从硬盘读取的tf_serialized（example_proto）作为参数，并对其进行解码。函数中的dics字典就是与编码过程中tf_feature相对应的解码字典。由于示例中的数据都为固定长度的序列，所以使用tf.FixedLenFeature来对数据进行解析，需要指定数据的形状以及数据类型（与编码数据一致）。然后使用tf.parse_single_example将tf_serialized解码为tf_example。最后将图像数据reshape为原来的形状。</p>
+<p>然后，创建一个读取TFRecord数据的Pipeline：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dataset = tf.data.TFRecordDataset(filenames, buffer_size=<span class="number">256</span>&lt;&lt;<span class="number">20</span>) <span class="comment"># 从TFRecord读取数据</span></span><br><span class="line">new_dataset = dataset.map(self.parse_function, num_parallel_calls=<span class="number">8</span>) <span class="comment"># 解码数据</span></span><br><span class="line">batch_iterator = new_dataset.shuffle(<span class="number">10000</span>).batch(self.pretrain_batch_size).repeat().make_one_shot_iterator()</span><br></pre></td></tr></table></figure>
+<p>其中filenames为TFRecords文件的文件名list，如[fn1.tfrecord, fn2.tfrecord, …]。若只有一个TFRecord文件，则filenames里只有一个元素。</p>
+<h1 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h1><p>下面是一个以图像分类为例的示例代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">from</span> scipy <span class="keyword">import</span> misc</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据增强</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">augmentation</span><span class="params">(image, aug_img_h, aug_img_w)</span>:</span></span><br><span class="line">    seed = random.randint(<span class="number">0</span>, <span class="number">2</span> ** <span class="number">31</span> - <span class="number">1</span>)</span><br><span class="line">    ori_image_shape = tf.shape(image)</span><br><span class="line">    image = tf.image.random_flip_left_right(image, seed=seed)</span><br><span class="line">    image = tf.image.resize_images(image, [aug_img_h, aug_img_w])</span><br><span class="line">    image = tf.random_crop(image, ori_image_shape, seed=seed)</span><br><span class="line">    <span class="keyword">return</span> image</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClassificationImageData</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, img_size=<span class="number">256</span>, augment_flag=True)</span>:</span></span><br><span class="line">        self.img_size = img_size</span><br><span class="line">        self.augment_flag = augment_flag</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 从root文件夹中获取图像路径及label对。root文件夹中每个子文件夹保存了一个类别的图像数据</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_path_label</span><span class="params">(self, root)</span>:</span></span><br><span class="line">        ids = list(os.listdir(root))</span><br><span class="line">        ids.sort()</span><br><span class="line">        self.cat_num = len(ids)</span><br><span class="line">        id_dict = dict(zip(ids, list(range(self.cat_num))))</span><br><span class="line">        paths = []</span><br><span class="line">        labels = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> ids:</span><br><span class="line">            cur_dir = os.path.join(root, i)</span><br><span class="line">            fns = os.listdir(cur_dir)</span><br><span class="line">            paths += [os.path.join(cur_dir, fn) <span class="keyword">for</span> fn <span class="keyword">in</span> fns]</span><br><span class="line">            labels += [id_dict[i]]*len(fns)</span><br><span class="line">        <span class="keyword">return</span> paths, labels</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 图像数据处理</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">image_processing</span><span class="params">(self, img)</span>:</span></span><br><span class="line">        img.set_shape([<span class="keyword">None</span>, <span class="keyword">None</span>, <span class="number">3</span>])</span><br><span class="line">        img = tf.image.resize_images(img, [self.img_size, self.img_size])</span><br><span class="line">        img = tf.cast(img, tf.float32) / <span class="number">127.5</span> - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.augment_flag :</span><br><span class="line">            augment_size_h = self.img_size + (<span class="number">30</span> <span class="keyword">if</span> self.img_size == <span class="number">256</span> <span class="keyword">else</span> <span class="number">15</span>)</span><br><span class="line">            augment_size_w = self.img_size + (<span class="number">30</span> <span class="keyword">if</span> self.img_size == <span class="number">256</span> <span class="keyword">else</span> <span class="number">15</span>)</span><br><span class="line">            p = random.random()</span><br><span class="line">            <span class="keyword">if</span> p &gt; <span class="number">0.5</span>:</span><br><span class="line">                img = augmentation(img, augment_size_h, augment_size_w)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> img</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 创建TFRecord</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">write_tfrecord</span><span class="params">(self, read_dir, write_path)</span>:</span></span><br><span class="line">        writer = tf.python_io.TFRecordWriter(write_path, options=<span class="keyword">None</span>)</span><br><span class="line">        paths, labels = self.get_path_label(read_dir)</span><br><span class="line">        <span class="keyword">assert</span>(len(paths) == len(labels))</span><br><span class="line">        total = len(paths)</span><br><span class="line">        cnt = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> p, l <span class="keyword">in</span> zip(paths, labels):</span><br><span class="line">            img = misc.imread(p).astype(np.uint8)</span><br><span class="line">            <span class="keyword">assert</span>(img.ndim == <span class="number">3</span>)</span><br><span class="line">            shape = img.shape</span><br><span class="line">            <span class="keyword">assert</span>(shape[<span class="number">0</span>] == self.img_size)</span><br><span class="line">            <span class="keyword">assert</span>(shape[<span class="number">1</span>] == self.img_size)</span><br><span class="line">            tf_features = tf.train.Features(feature=&#123;</span><br><span class="line">                <span class="string">"img"</span>: tf.train.Feature(bytes_list=tf.train.BytesList(value=[img.tostring()])),</span><br><span class="line">                <span class="string">"shape"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=list(shape))),</span><br><span class="line">                <span class="string">"label"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=[l]))</span><br><span class="line">            &#125;)</span><br><span class="line">            tf_example = tf.train.Example(features = tf_features)</span><br><span class="line">            tf_serialized = tf_example.SerializeToString()</span><br><span class="line">            writer.write(tf_serialized)</span><br><span class="line">            cnt += <span class="number">1</span></span><br><span class="line">            print(<span class="string">'%d/%d'</span> % (cnt, total), end=<span class="string">'\r'</span>)</span><br><span class="line">        writer.close()</span><br><span class="line">        print(<span class="string">'done![%d/%d]'</span> % (cnt, total))</span><br><span class="line">        print(<span class="string">'class num: %d'</span> % self.cat_num)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse_function</span><span class="params">(self, example_proto)</span>:</span></span><br><span class="line">        dics = &#123;</span><br><span class="line">            <span class="string">'img'</span>: tf.FixedLenFeature(shape=(), dtype=tf.string),</span><br><span class="line">            <span class="string">'shape'</span>: tf.FixedLenFeature(shape=(<span class="number">3</span>,), dtype=tf.int64),</span><br><span class="line">            <span class="string">'label'</span>: tf.FixedLenFeature(shape=(), dtype=tf.int64)</span><br><span class="line">        &#125;</span><br><span class="line">        parsed_example = tf.parse_single_example(example_proto, dics)</span><br><span class="line">        parsed_example[<span class="string">'img'</span>] = tf.decode_raw(parsed_example[<span class="string">'img'</span>], tf.uint8)</span><br><span class="line">        parsed_example[<span class="string">'img'</span>] = tf.reshape(parsed_example[<span class="string">'img'</span>], parsed_example[<span class="string">'shape'</span>])</span><br><span class="line">        <span class="keyword">return</span> self.image_processing(parsed_example[<span class="string">'img'</span>]), parsed_example[<span class="string">'label'</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取TFRecord数据</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">read_TFRecord</span><span class="params">(self, filenames)</span>:</span></span><br><span class="line">        dataset = tf.data.TFRecordDataset(filenames, buffer_size=<span class="number">256</span>&lt;&lt;<span class="number">20</span>)</span><br><span class="line">        <span class="keyword">return</span> dataset.map(self.parse_function, num_parallel_calls=<span class="number">8</span>)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tensorflow/" rel="tag"># tensorflow</a>
+          
+            <a href="/tags/TFRecord/" rel="tag"># TFRecord</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/20180707/GoogleImageCrawler.html" rel="next" title="利用google图片搜索收集图片数据集(Python)">
+                <i class="fa fa-chevron-left"></i> 利用google图片搜索收集图片数据集(Python)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">luckycallor</p>
+              <p class="site-description motion-element" itemprop="description">gitalk local</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/luckycallor" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:luckycallor@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#创建TFRecord"><span class="nav-number">1.</span> <span class="nav-text">创建TFRecord</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建文件读写接口"><span class="nav-number">1.1.</span> <span class="nav-text">创建文件读写接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将数据组织成字典格式的tf-example"><span class="nav-number">1.2.</span> <span class="nav-text">将数据组织成字典格式的tf_example</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将tf-example序列化并写入硬盘"><span class="nav-number">1.3.</span> <span class="nav-text">将tf_example序列化并写入硬盘</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从TFRecord中读取数据"><span class="nav-number">2.</span> <span class="nav-text">从TFRecord中读取数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#示例代码"><span class="nav-number">3.</span> <span class="nav-text">示例代码</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">luckycallor</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/gitalk/gitalk.css">
+  
+  <script src="/lib/gitalk/gitalk.min.js"></script>
+
+	<script src="/js/src/md5.min.js"></script>
+
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '2cea902a8729c0224023',
+		  clientSecret: '1d5891d0205e77e4de0e0ddb609ae8dd367d7cb6',
+		  repo: 'blog-comments',
+		  owner: 'luckycallor',
+		  admin: ['luckycallor'], 
+		  id: md5(location.pathname),
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script type="text/javascript">
+  
+    bookmark.scrollToMark('auto', "#more");
+  
+  </script>
+
+
+  
+
+</body>
+</html>
