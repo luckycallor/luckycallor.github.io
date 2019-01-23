@@ -117,7 +117,7 @@
 <meta property="og:description" content="人脸识别任务可以分为识别和核实两种。其中识别任务可以看作是一种分类任务，输入图片，输出人物身份类别；核实任务则是输入两张图片，输出判断这两人是否为同一个人。一方面，由于现实应用中更多的面对的是一个开集数据，也就是说应用中遇到的图片可能不是之前遇到的任何一个人；另一方面，可以通过对输入的测试图片与已知人物身份的图片进行核实来判断输入图片的身份。因此，当前的人脸识别研究更多的关注于核实任务。人脸核实任">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="https://raw.githubusercontent.com/luckycallor/ImageBase/master/faceLoss/lossMargin.png">
-<meta property="og:updated_time" content="2019-01-23T15:33:59.014Z">
+<meta property="og:updated_time" content="2019-01-23T15:43:00.913Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="神经网络人脸识别损失函数总结">
 <meta name="twitter:description" content="人脸识别任务可以分为识别和核实两种。其中识别任务可以看作是一种分类任务，输入图片，输出人物身份类别；核实任务则是输入两张图片，输出判断这两人是否为同一个人。一方面，由于现实应用中更多的面对的是一个开集数据，也就是说应用中遇到的图片可能不是之前遇到的任何一个人；另一方面，可以通过对输入的测试图片与已知人物身份的图片进行核实来判断输入图片的身份。因此，当前的人脸识别研究更多的关注于核实任务。人脸核实任">
@@ -341,7 +341,7 @@
                 
               
 
-              <time title="Created: 2019-01-23 23:18:42 / Modified: 23:33:59" itemprop="dateCreated datePublished" datetime="2019-01-23T23:18:42+08:00">2019-01-23</time>
+              <time title="Created: 2019-01-23 23:18:42 / Modified: 23:43:00" itemprop="dateCreated datePublished" datetime="2019-01-23T23:18:42+08:00">2019-01-23</time>
             
 
             
@@ -401,7 +401,7 @@
 <p>人脸识别模型训练的损失函数主要分为基于分类的损失函数和基于triplet loss的损失函数两大类。其中基于分类的损失函数又因为是否对embedding或分类权重（W）做归一化以及是否增加额外的间隔（margin）等产生了多种变体；triplet loss则分为基于欧氏距离和基于角度距离两种。下面对这些损失及各种变体分别进行介绍。</p>
 <h1 id="基于分类（softmax）的损失"><a href="#基于分类（softmax）的损失" class="headerlink" title="基于分类（softmax）的损失"></a>基于分类（softmax）的损失</h1><h2 id="基本softmax分类损失"><a href="#基本softmax分类损失" class="headerlink" title="基本softmax分类损失"></a>基本softmax分类损失</h2><p>基本的softmax分类通过将embedding输入一层全连接层以及softmax函数得到分类概率。用 $x, W, b$分别表示网络输出的人脸embedding以及全连接层的权重和偏置。那么经过softmax得到的分类损失可以表示为：<br>$$L_{softmax}=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{W^T_{y_i}x_i+b_{y_i}}}{\sum^n_{j=1}{e^{W^T_{j}x_i+b_{j}}}}}}$$<br>其中，$N$表示样本数量，$n$表示类别总数，$y_i$表示样本$x_i$的真实类别。</p>
 <p>由于softmax的分母对embedding在各个类别上的结果进行了求和，因此最小化这一损失一定程度上能够使类间距离变大，类内距离变小。得益于此，使用基本的softmax损失在大规模人脸数据上对神经网络进行训练得到人脸表示（embedding）在人脸核实任务上也能取得较好的效果。</p>
-<h2 id="Sphereface-Loss"><a href="#Sphereface-Loss" class="headerlink" title="Sphereface Loss"></a>Sphereface Loss</h2><p>Sphereface Loss在softmax的基础上进一步引入了显式的角度间隔（angular margin），从而训练时能够进一步缩小类内距离，扩大类间距离。首先，将分类全连接层中的偏置$b$置为0，那么可以得到下面的等式：<br>$$W^T_{j}x_i=| W^T_j ||x_i|\cos{\theta_j}$$<br>其中$\theta_j$表示$W^T_j$与$x_i$的夹角。这样以来损失函数就变成了：<br>$$L_{softmax}’=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{| W^T_{y_i} ||x_i|\cos{\theta_{y_i}}}}{\sum^n_{j=1}{e^{| W^T_j ||x_i|\cos{\theta_j}}}}}}$$<br>进一步地，我们将权重$W$归一化，使$|W|=1$，那么损失函数进一步变为：<br>$$L_{softmax}’’=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{|x_i|\cos{\theta_{y_i}}}}{\sum^n_{j=1}{e^{|x_i|\cos{\theta_j}}}}}}$$<br>如此以来，分类结果仅与embedding地范数$|x_i|$和夹角$\theta_j$相关，在此基础上，进一步引入角度间隔（angular margin）$m$，就可得到sphereface loss：<br>$$L_{sphereface}=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{|x_i|\cos{m\theta_{y_i}}}}{e^{|x_i|\cos{m\theta_{y_i}}}+\sum^n_{j=1, j\neq{y_i}}{e^{|x_i|\cos{\theta_j}}}}}}$$</p>
+<h2 id="Sphereface-Loss"><a href="#Sphereface-Loss" class="headerlink" title="Sphereface Loss"></a>Sphereface Loss</h2><p>Sphereface Loss在softmax的基础上进一步引入了显式的角度间隔（angular margin），从而训练时能够进一步缩小类内距离，扩大类间距离。首先，将分类全连接层中的偏置$b$置为0，那么可以得到下面的等式：<br>$$W^T_{j}x_i=\Vert W^T_j \Vert\Vert x_i\Vert\cos{\theta_j}$$<br>其中$\theta_j$表示$W^T_j$与$x_i$的夹角。这样以来损失函数就变成了：<br>$$L_{softmax}’=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{\Vert W^T_{y_i} \Vert\Vert x_i\Vert\cos{\theta_{y_i}}}}{\sum^n_{j=1}{e^{\Vert W^T_j \Vert \Vert x_i\Vert\cos{\theta_j}}}}}}$$<br>进一步地，我们将权重$W$归一化，使$\Vert W\Vert=1$，那么损失函数进一步变为：<br>$$L_{softmax}’’=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{\Vert x_i\Vert\cos{\theta_{y_i}}}}{\sum^n_{j=1}{e^{\Vert x_i\Vert\cos{\theta_j}}}}}}$$<br>如此以来，分类结果仅与embedding地范数$\Vert x_i\Vert$和夹角$\theta_j$相关，在此基础上，进一步引入角度间隔（angular margin）$m$，就可得到sphereface loss：<br>$$L_{sphereface}=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{\Vert x_i\Vert\cos{m\theta_{y_i}}}}{e^{\Vert x_i\Vert\cos{m\theta_{y_i}}}+\sum^n_{j=1, j\neq{y_i}}{e^{\Vert x_i\Vert\cos{\theta_j}}}}}}$$</p>
 <h2 id="CosineFace-Loss"><a href="#CosineFace-Loss" class="headerlink" title="CosineFace Loss"></a>CosineFace Loss</h2><p>Cosineface进一步对人脸表示（embedding）$x$进行了归一化，从而使分类结果仅取决于$W^T_j$与$x_i$的夹角余弦；并进一步引入了余弦间隔$m$，用于扩大类间距离，缩小类内距离。由于余弦的取值范围较小，为了使类别间差别更显著，进一步引入一个超参数$s$用于放大余弦值。从而得到Cosineface的损失如下：<br>$$L_{cosineface}=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{s(\cos{\theta_{y_i}}-m)}}{e^{s(\cos{\theta_{y_i}}-m)}+\sum^n_{j=1, j\neq{y_i}}{e^{s\cos{\theta_j}}}}}}$$</p>
 <h2 id="Arcface-Loss"><a href="#Arcface-Loss" class="headerlink" title="Arcface Loss"></a>Arcface Loss</h2><p>为了使人脸表示（embedding）的学习更符合超球体流形假设，Arcface进一步将Cosineface中的余弦间隔修改为角度间隔，得到如下损失：<br>$$L_{arcface}=-\frac{1}{N}\sum^N_{i=1}{\log{\frac{e^{s(\cos({\theta_{y_i}}+m))}}{e^{s(\cos({\theta_{y_i}}+m))}+\sum^n_{j=1, j\neq{y_i}}{e^{s\cos{\theta_j}}}}}}$$</p>
 <h2 id="分类损失小结"><a href="#分类损失小结" class="headerlink" title="分类损失小结"></a>分类损失小结</h2><p>总之，分类损失利用softmax函数的性质，促使模型学到的人脸表示（embedding）具有较小的类内距离，同时具有较大的类间距离。此类损失的改进大多是在softmax的基础上，引入不同类型的显式角度间隔，优化模型的分类边界，使得优化任务变得更难，限制更强，从而缩小人脸表示的类内距离，扩大类间距离。</p>
